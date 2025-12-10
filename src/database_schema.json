@@ -24,6 +24,12 @@
         "students":"text[] NOT NULL DEFAULT '{}'",
         "created_at":"timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"
     },
+    "resources": {
+        "id":"integer PRIMARY KEY",
+        "filename":"text NOT NULL",
+        "owner":"integer references users(id) NOT NULL",
+        "upload_time":"timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"
+    },
     "activites": {
         "id":"integer PRIMARY KEY",
         "name":"text NOT NULL",
@@ -32,22 +38,16 @@
         "parent":"integer references activites(id)",
         "description":"text",
         "location":"text",
-        "attachments":"integer[] references resources(id) NOT NULL DEFAULT '{}'",
+        "attachments":"integer[] NOT NULL DEFAULT '{}'",
         "created_at":"timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP",
         "start_time":"timestamp NOT NULL",
         "end_time":"timestamp NOT NULL"
-    },
-    "resources": {
-        "id":"integer PRIMARY KEY",
-        "filename":"text NOT NULL",
-        "owner":"integer references users(id) NOT NULL",
-        "upload_time":"timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"
     },
     "schedules": {
         "id": "integer PRIMARY KEY",
         "title": "text NOT NULL",
         "owner": "integer references users(id) NOT NULL",
-        "activities": "integer[] references activites(id) NOT NULL DEFAULT '{}'",
+        "activities": "integer[] NOT NULL DEFAULT '{}'",
         "created_at": "timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP",
         "cron": "text NOT NULL",
         "default_name": "text NOT NULL",
@@ -55,7 +55,7 @@
         "default_parent":"integer references activites(id)",
         "default_description":"text",
         "default_location":"text",
-        "default_attachments":"integer[] references resources(id) NOT NULL DEFAULT '{}'",
+        "default_attachments":"integer[] NOT NULL DEFAULT '{}'",
         "default_start_time":"timestamp NOT NULL",
         "default_end_time":"timestamp NOT NULL"
     },
@@ -76,7 +76,7 @@
         "activity_RPE":"integer",
         "activity_related_id":"integer references activites(id)",
         "study_duration_minutes":"integer",
-        "attachments":"integer[] references resources(id) NOT NULL DEFAULT '{}'",
+        "attachments":"integer[] NOT NULL DEFAULT '{}'",
         "notes":"text"
     }
 }

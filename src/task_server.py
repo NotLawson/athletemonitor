@@ -15,7 +15,7 @@ from datetime import datetime as dt
 
 # 1. Load .env file
 import dotenv
-if not dotenv.load_dotenv("../.env"):
+if not dotenv.load_dotenv():
     print("[FATAL] Could not load .env file, exiting.")
     sys.exit(1)
 

@@ -11,11 +11,12 @@
 # 0. System Imports
 import sys, os
 import time
-from datetime import datetime as dt
+from datetime import datetime as dt, timezone as tz
+import utils
 
 # 1. Load .env file
 import dotenv
-if not dotenv.load_dotenv("../.env"):
+if not dotenv.load_dotenv():
     print("[FATAL] Could not load .env file, exiting.")
     sys.exit(1)
 
@@ -55,12 +56,17 @@ try:
 except Exception as e:
     logger.fatal("Could not connect to Database: %s", e)
     sys.exit(1)
+
+from db import Database
+db = Database(db_conn)
+db.database_table_constructor()
 logger.info("Database connection established.")
 
 # Flask init
 logger.info("Initalising Flask web server...")
 from flask import Flask, jsonify
-app = Flask(__name__, root_path="/api")
+app = Flask(__name__)
+app.config['APPLICATION_ROOT'] = '/api'
 app.config['APP_NAME'] = 'ADP Athlete Monitor'
 app.config['VERSION'] = '0.0.1'
 logger.info("Flask web server initialized.")
@@ -70,11 +76,33 @@ import blueprints as bp
 import importlib
 
 for module_name in bp.modules:
-    logger.info("Registering blueprint: %s", module_name)
     try:
         module = importlib.import_module(f"blueprints.{module_name}")
         app.register_blueprint(module.bp)
-        logger.info("Registered blueprint: %s", module_name)
+        logger.debug("Registered blueprint: %s", module_name)
     except Exception as e:
         logger.error("Could not register blueprint %s: %s", module_name, e)
+logger.info("All blueprints registered.")
 
+# 7. Root routes (lol)
+@app.route('/', methods=['GET'])
+def index():
+    return jsonify({
+        "app_name": app.config['APP_NAME'],
+        "version": app.config['VERSION'],
+        "status": "running",
+        "timestamp": dt.now(tz.utc).isoformat()
+    }), 200
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({"error": "Not Found", "details": str(e)}), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+
+
+if __name__ == '__main__':
+    logger.info("Starting Flask web server on %s:%s...", os.environ.get("APP_HOST", "0.0.0.0"), os.environ.get("APP_PORT", "8080"))
+    app.run(host=os.environ.get("APP_HOST", "0.0.0.0"), port=int(os.environ.get("APP_PORT", 8080)), debug=(log_level == "DEBUG"))

@@ -1,0 +1,19 @@
+# Docker compose file. Is used to start a postgres database for local development.
+services:
+  postgres:
+    image: postgres:15
+    container_name: local_postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+  broker:
+    image: redis:latest
+    container_name: redis_broker
+    ports:
+      - "6379:6379"

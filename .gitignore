@@ -1,0 +1,4 @@
+# ADP Athlete Monitor gitignore
+
+# Ignore secrets
+.env

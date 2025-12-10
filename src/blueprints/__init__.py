@@ -1,0 +1,5 @@
+# Blueprints
+modules = [
+    'users',
+    'logs'
+]

@@ -41,7 +41,7 @@
         "id":"integer PRIMARY KEY",
         "filename":"text NOT NULL",
         "owner":"integer references users(id) NOT NULL",
-        "upload_time":"timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        "upload_time":"timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP"
     },
     "schedules": {
         "id": "integer PRIMARY KEY",

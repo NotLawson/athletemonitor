@@ -5,3 +5,7 @@
 
 # Ignore postgres
 postgres/
+
+# .pyc Source files
+*.pyc
+__pycache__/

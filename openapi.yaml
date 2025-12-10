@@ -1,0 +1,5 @@
+openapi: 3.1.0
+info:
+  title: ADP Athlete Monitor API
+  version: 0.1
+paths: {}

@@ -13,6 +13,7 @@ import sys, os
 import time
 from datetime import datetime as dt, timezone as tz
 import utils
+from responses import Responses
 
 # 1. Load .env file
 import dotenv
@@ -62,13 +63,17 @@ db = Database(db_conn)
 db.database_table_constructor()
 logger.info("Database connection established.")
 
-# Flask init
+# 5. Flask init
 logger.info("Initalising Flask web server...")
 from flask import Flask, jsonify
 app = Flask(__name__)
 app.config['APPLICATION_ROOT'] = '/api'
 app.config['APP_NAME'] = 'ADP Athlete Monitor'
 app.config['VERSION'] = '0.0.1'
+app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY", "secret")
+
+from blueprints.auth import require_authentication, require_type, current_user, register
+
 logger.info("Flask web server initialized.")
 
 # 6. Blueprints
@@ -87,22 +92,45 @@ logger.info("All blueprints registered.")
 # 7. Root routes (lol)
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify({
-        "app_name": app.config['APP_NAME'],
+    return Responses.OK_200(data={
         "version": app.config['VERSION'],
         "status": "running",
         "timestamp": dt.now(tz.utc).isoformat()
-    }), 200
+    }).build()
 
 @app.errorhandler(404)
 def not_found(e):
-    return jsonify({"error": "Not Found", "details": str(e)}), 404
+    return Responses.Not_Found_404().build()
 
 @app.errorhandler(500)
 def internal_error(e):
-    return jsonify({"error": "Internal Server Error", "details": str(e)}), 500
+    return Responses.Internal_Server_Error_500(details=str(e)).build()
 
+@app.route('/response_test/<int:response_code>', methods=['GET'])
+def response_test(response_code):
+    return Responses.get(response_code).build()
 
 if __name__ == '__main__':
+    logger.info("Checking for admin user...")
+    try:
+        admin_user = db.execute_query_fetchall("SELECT id FROM users WHERE username = %s", ('admin',))[0]
+        logger.info("Admin user found with ID: %s", admin_user[0])
+    except IndexError:
+        logger.warning("No admin user found, creating default admin user with username 'admin' and password 'adminpass'. Please change this password immediately after first login.")
+        resp, status = register(
+            username='admin',
+            password=app.config.get("SECRET_KEY"),
+            pname='Admin',
+            fname='Default',
+            lname='Administrator',
+            email='admin@localhost',
+            type='admin'
+        )
+        if status == 201:
+            logger.info("Default admin user created successfully.")
+        else:
+            logger.fatal("Could not create default admin user: %s", resp.get("details"))
+            sys.exit(1)
+
     logger.info("Starting Flask web server on %s:%s...", os.environ.get("APP_HOST", "0.0.0.0"), os.environ.get("APP_PORT", "8080"))
     app.run(host=os.environ.get("APP_HOST", "0.0.0.0"), port=int(os.environ.get("APP_PORT", 8080)), debug=(log_level == "DEBUG"))

@@ -1,5 +1,173 @@
-openapi: 3.1.0
+openapi: 3.0.4
 info:
   title: ADP Athlete Monitor API
-  version: 0.1
-paths: {}
+  description: API for the ADP Athlete Monitor.
+  version: 0.0.1
+  contact:
+    name: Lawson Conallin
+    email: 011874@wmac.com.au
+
+servers:
+  - url: https://adp.wmac.com.au/api
+    description: Main Production Server
+  - url: http://127.0.0.1:8080
+    description: Local Development Server
+
+paths:
+  /:
+    get:
+      operationId: getRoot
+      tags:
+        - Health Check
+      summary: Health Check Endpoint"
+      description: Returns a simple message to confirm the API is running.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  version:
+                    type: string
+                    example: "0.0.1"
+                  status:
+                    type: string
+                    example: "running"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-01-01T12:00:00Z"
+
+  /auth/authorize:
+    post:
+      operationId: postAuthAuthorize
+      tags:
+        - Authentication
+      summary: Authorize User
+      description: Authorizes a user and returns an authentication JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "example"
+                password:
+                  type: string
+                  example: "example"
+      responses:
+        '200':
+          description: Successful authorisation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: Unauthorized - Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid username or password."
+
+  /auth/authenticate:
+    get:
+      operationId: getAuthAuthenticate
+      tags:
+        - Authentication
+      summary: Authenticate User
+      description: Validates the provided JWT and returns user information.
+      parameters:
+        - in: header
+          name: Authorization
+          required: true
+          schema:
+            type: string
+          description: 'Bearer token for authentication (e.g., "Bearer <token>")'
+      responses:
+        '200':
+          description: Successful authentication
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    type: integer
+                    example: 1
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Invalid token"
+
+        
+  /auth/register:
+    post:
+      operationId: postAuthRegister
+      tags:
+        - Authentication
+      summary: Register User
+      description: Registers a new user in the system.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "newuser"
+                email:
+                  type: string
+                  format: email
+                  example: "new@example.com"
+                password:
+                  type: string
+                  example: "newpassword"
+                fname:
+                  type: string
+                  example: "John"
+                lname:
+                  type: string
+                  example: "Doe"
+                
+      responses:
+        '201':
+          description: Successful registration
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully."
+        '400':
+          description: Bad Request - Username already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Username already exists."

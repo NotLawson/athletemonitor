@@ -2,20 +2,48 @@
 import json
 import os
 import logging
+
+import psycopg2
 logger = logging.getLogger(__name__)
 
-
-
 class Database:
-    def __init__(self, connection):
+    def __init__(self, connection: psycopg2.extensions.connection):
         self.connection = connection
 
     def execute_query(self, query, params=None):
         cursor = self.connection.cursor()
         try:
             cursor.execute(query, params or ())
+        except psycopg2.ProgrammingError as e:
+            pass
+        except Exception as e:
+            logger.error("Database query failed: %s", e)
+            raise
+        finally:
+            cursor.close()
+    
+    def execute_query_fetchall(self, query, params=None):
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(query, params or ())
             results = cursor.fetchall()
             return results
+        except psycopg2.ProgrammingError as e:
+            return []
+        except Exception as e:
+            logger.error("Database query failed: %s", e)
+            raise
+        finally:
+            cursor.close()
+        
+    def execute_query_fetchone(self, query, params=None):
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(query, params or ())
+            result = cursor.fetchone()
+            return result
+        except psycopg2.ProgrammingError as e:
+            return None
         except Exception as e:
             logger.error("Database query failed: %s", e)
             raise

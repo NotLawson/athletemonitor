@@ -1,6 +1,8 @@
 # Blueprints
 modules = [
-    'users',
+    'auth',
+    'iden',
+    'stats',
     'logs',
-    'testing'
+    'admin'
 ]

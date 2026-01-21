@@ -11,7 +11,8 @@
 # 0. System Imports
 import sys, os
 import time
-from datetime import datetime as dt, timezone as tz
+from datetime import datetime as dt
+import pytz as tz
 import utils
 from responses import Responses
 
@@ -71,6 +72,7 @@ app.config['APPLICATION_ROOT'] = '/api'
 app.config['APP_NAME'] = 'ADP Athlete Monitor'
 app.config['VERSION'] = '0.0.1'
 app.config['SECRET_KEY'] = os.getenv("APP_SECRET_KEY", "secret")
+app.config['TZ_OBJ'] = tz.timezone(os.getenv("TZ", "UTC"))
 
 from blueprints.auth import require_authentication, require_type, current_user, register
 

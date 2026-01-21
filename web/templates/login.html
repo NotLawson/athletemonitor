@@ -1,0 +1,22 @@
+<h1>Login</h1>
+<form id="loginform">
+    <label for="username">Username:</label><br>
+    <input type="text" id="username" name="username" required><br>
+    <label for="password">Password:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+    <input type="submit" value="Login">
+</form>
+<script>
+    document.getElementById('loginform').addEventListener('submit', (event) => {
+        event.preventDefault(); // Prevent form submission
+        login();
+    });
+    function login() {
+        const form = document.getElementById('loginform');
+        const username = form.username.value;
+        const password = form.password.value;
+
+        
+        return false; // Prevent form submission
+    }
+</script>

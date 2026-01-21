@@ -22,17 +22,16 @@ def get_log(log_id):
         return Responses.Forbidden_403(details="You do not have permission to view this log").build()
     match metadata[0]:
         case 'daily':
-            log = db.execute_query_fetchone("SELECT user_id, timestamp, updated, daily_sleep_quality, daily_muscle_soreness, daily_mood, daily_stress_level, notes FROM log WHERE id = %s", (log_id,))
+            log = db.execute_query_fetchone("SELECT user_id, timestamp, updated, daily_muscle_soreness, daily_mood, daily_stress_level, notes FROM log WHERE id = %s", (log_id,))
             return Responses.OK_200(data={
                 "id": log_id,
                 "user_id": log[0],
                 "timestamp": log[1],
                 "updated": log[2],
-                "daily_sleep_quality": log[3],
-                "daily_muscle_soreness": log[4],
-                "daily_mood": log[5],
-                "daily_stress_level": log[6],
-                "notes": log[7]
+                "daily_muscle_soreness": log[3],
+                "daily_mood": log[4],
+                "daily_stress_level": log[5],
+                "notes": log[6]
             }).build()
         
         case 'injury':
@@ -72,6 +71,18 @@ def get_log(log_id):
                 "notes": log[4]
             }).build()
         
+        case 'sleep':
+            log = db.execute_query_fetchone("SELECT user_id, timestamp, updated, sleep_quality, sleep_duration_minutes, notes FROM log WHERE id = %s", (log_id,))
+            return Responses.OK_200(data={
+                "id": log_id,
+                "user_id": log[0],
+                "timestamp": log[1],
+                "updated": log[2],
+                "sleep_quality": log[3],
+                "sleep_duration_minutes": log[4],
+                "notes": log[5]
+            }).build()
+
         case _:
             return Responses.Internal_Server_Error_500(details="Unknown log type").build()
 
@@ -100,13 +111,12 @@ def patch_log(log_id):
     except IndexError: return Responses.Not_Found_404(details="Log not found").build()
     match metadata[0]:
         case 'daily':
-            log = db.execute_query_fetchone("SELECT user_id, timestamp, updated, daily_sleep_quality, daily_muscle_soreness, daily_mood, daily_stress_level, notes FROM log WHERE id = %s", (log_id,))
-            db.execute_query("UPDATE log SET daily_sleep_quality = %s, daily_muscle_soreness = %s, daily_mood = %s, daily_stress_level = %s, notes = %s, updated = NOW() WHERE id = %s", (
-                request.json.get('daily_sleep_quality', log[3]),
-                request.json.get('daily_muscle_soreness', log[4]),
-                request.json.get('daily_mood', log[5]),
-                request.json.get('daily_stress_level', log[6]),
-                request.json.get('notes', log[7]),
+            log = db.execute_query_fetchone("SELECT user_id, timestamp, updated, daily_muscle_soreness, daily_mood, daily_stress_level, notes FROM log WHERE id = %s", (log_id,))
+            db.execute_query("UPDATE log SET daily_muscle_soreness = %s, daily_mood = %s, daily_stress_level = %s, notes = %s, updated = NOW() WHERE id = %s", (
+                request.json.get('daily_muscle_soreness', log[3]),
+                request.json.get('daily_mood', log[4]),
+                request.json.get('daily_stress_level', log[5]),
+                request.json.get('notes', log[6]),
                 log_id
             ))
             return Responses.OK_200(data={"message": "Log updated successfully"}).build()
@@ -142,6 +152,16 @@ def patch_log(log_id):
             ))
             return Responses.OK_200(data={"message": "Log updated successfully"}).build()
 
+        case 'sleep':
+            log = db.execute_query_fetchone("SELECT user_id, timestamp, updated, sleep_quality, sleep_duration_minutes, notes FROM log WHERE id = %s", (log_id,))
+            db.execute_query("UPDATE log SET sleep_quality = %s, sleep_duration_minutes = %s, notes = %s, updated = NOW() WHERE id = %s", (
+                request.json.get('sleep_quality', log[3]),
+                request.json.get('sleep_duration_minutes', log[4]),
+                request.json.get('notes', log[5]),
+                log_id
+            ))
+            return Responses.OK_200(data={"message": "Log updated successfully"}).build()
+        
         case _:
             return Responses.Internal_Server_Error_500(details="Unknown log type").build()
 
@@ -161,7 +181,6 @@ def put_log():
     match log_type:
         case 'daily':
             try:
-                daily_sleep_quality = request.json['daily_sleep_quality']
                 daily_muscle_soreness = request.json['daily_muscle_soreness']
                 daily_mood = request.json['daily_mood']
                 daily_stress_level = request.json['daily_stress_level']
@@ -169,10 +188,9 @@ def put_log():
             except KeyError as e:
                 return Responses.Bad_Request_400(details=f"Missing required field: {e.args[0]}").build()
             
-            db.execute_query("INSERT INTO log (user_id, type, timestamp, updated, daily_sleep_quality, daily_muscle_soreness, daily_mood, daily_stress_level, notes) VALUES (%s, %s, NOW(), NOW(), %s, %s, %s, %s, %s)", (
+            db.execute_query("INSERT INTO log (user_id, type, timestamp, updated, daily_muscle_soreness, daily_mood, daily_stress_level, notes) VALUES (%s, %s, NOW(), NOW(), %s, %s, %s, %s)", (
                 user,
                 'daily',
-                daily_sleep_quality,
                 daily_muscle_soreness,
                 daily_mood,
                 daily_stress_level,
@@ -233,6 +251,22 @@ def put_log():
             ))
             return Responses.Created_201(data={"message": "Study log created successfully"}).build()
         
+        case 'sleep':
+            try:
+                sleep_quality = request.json['sleep_quality']
+                sleep_duration_minutes = request.json['sleep_duration_minutes']
+                notes = request.json.get('notes', '')
+            except KeyError as e:
+                return Responses.Bad_Request_400(details=f"Missing required field: {e.args[0]}").build()
+            db.execute_query("INSERT INTO log (user_id, type, timestamp, updated, sleep_quality, sleep_duration_minutes, notes) VALUES (%s, %s, NOW(), NOW(), %s, %s, %s)", (
+                user,
+                'sleep',
+                sleep_quality,
+                sleep_duration_minutes,
+                notes
+            ))
+            return Responses.Created_201(data={"message": "Sleep log created successfully"}).build()
+
         case _:
             return Responses.Bad_Request_400(details="Invalid log type").build()
 

@@ -1,11 +1,13 @@
-<h1>Login</h1>
-<form id="loginform">
-    <label for="username">Username:</label><br>
-    <input type="text" id="username" name="username" required><br>
-    <label for="password">Password:</label><br>
-    <input type="password" id="password" name="password" required><br><br>
-    <input type="submit" value="Login">
-</form>
+<main>
+    <h1>Login</h1>
+    <form id="loginform">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" name="username" required><br>
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        <input type="submit" value="Login">
+    </form>
+</main>
 <script>
     document.getElementById('loginform').addEventListener('submit', (event) => {
         event.preventDefault(); // Prevent form submission
@@ -15,8 +17,21 @@
         const form = document.getElementById('loginform');
         const username = form.username.value;
         const password = form.password.value;
-
-        
+        fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username: username, password: password })
+        }).then(response => {
+            if (response.ok) {
+                window.resolveLogin();
+            } else {
+                alert('Login failed. Please check your credentials and try again.');
+            }
+        })
         return false; // Prevent form submission
-    }
+    };
+    console.log("Login template loaded");
+
 </script>

@@ -1,0 +1,11 @@
+:80 {
+	root * /app/web
+	encode gzip zstd
+	handle_path /api/* {
+		reverse_proxy http://127.0.0.1:8080
+	}
+	handle {
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+}

@@ -19,3 +19,11 @@ services:
     container_name: redis_broker
     ports:
       - "6379:6379"
+
+  caddy:
+    image: caddy:latest
+    container_name: caddy_server
+    network_mode: "host"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ../web:/app/web

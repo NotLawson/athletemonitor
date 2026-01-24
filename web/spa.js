@@ -22,7 +22,12 @@ class SPA {
             fetch(`./templates/${route.template}`)
                 .then(response => response.text())
                 .then(html => {
-                    this.mainElement.innerHTML = html;
+                    var doc = new DOMParser().parseFromString(html, "text/html");
+                    this.mainElement.innerHTML = doc.getElementsByTagName('main')[0].innerHTML;
+                    doc.getElementsByTagName('script').array.forEach(element => {
+                        
+                    });
+                    try {this.mainElement.appendChild(doc.getElementsByTagName('script')[0]);} catch(e) {}
                     this.titleElement.textContent = route.title || this.defaultTitle;
                     this.navElement.style.display = route.nav ? 'flex' : 'none';
                     this.backButton.style.display = route.back ? 'block' : 'none';

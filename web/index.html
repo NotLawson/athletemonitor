@@ -9,6 +9,7 @@
         <!-- Scripts -->
         <script type="module" src="./spa.js"></script>
         <script type="module" src="./routes.js"></script>
+        <script type="module" src="./index.js"></script>
     </head>
     <button id="backButton" onclick="window.history.back();">Back</button>
     <body style="display: none;">
@@ -21,13 +22,50 @@
             <button class="navButton" onclick="window.load('/settings')">Settings</button>
         </div>
         <script type="module">
+            // ADP Client Script
             import { SPA } from './spa.js';
             import { routes } from './routes.js';
-            const spa = new SPA(routes, document.querySelector('article'), document.getElementById('navbar'), document.getElementById('backButton'), document.getElementById('title'), 'ADP Athlete Monitor');
-            spa.loadRoute("/")
+            import { API, Me } from './api.js';
 
+            // Start the Single Page Application
+            const spa = new SPA(routes, document.querySelector('article'), document.getElementById('navbar'), document.getElementById('backButton'), document.getElementById('title'), 'ADP Athlete Monitor');
+            spa.loadRoute("init");
             // wait on ready logic goes here
             document.body.style.display = "flex";
+
+            // Attempt to log in
+            var token = localStorage.getItem("authToken");
+            function resolveLogin() {
+                // resolve
+            }
+            async function login() {
+                // login flow
+                spa.loadRoute('login');
+                await new Promise((resolve) => {
+                    window.resolveLogin = resolve;
+                });
+
+            }
+            window.resolveLogin = resolveLogin;
+
+            if (token) {
+                try {
+                    const client = new API(token);
+                } catch (e) { // Login failed
+                    localStorage.removeItem("authToken");
+                    await login();
+                    token = localStorage.getItem("authToken");
+                    const client = new API(token);
+                }
+            } else {
+                await login();
+                token = localStorage.getItem("authToken");
+                const client = new API(token);
+            }
+
+            // get user data
+            user = new Me(client);
+            await user.getUserData();
 
             window.load = (path) => {
                 spa.loadRoute(path);

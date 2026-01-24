@@ -8,6 +8,12 @@
 // }
 
 const routes = {
+    'init': {
+        "title": "Initializing...",
+        "template": "init.html",
+        "nav": false,
+        "back": false
+    },
     '/': {
         "title": "Home",
         "template": "home.html",
@@ -19,6 +25,12 @@ const routes = {
         "template": "settings.html",
         "nav": false,
         "back": true
+    },
+    'login': {
+        "title": "Login",
+        "template": "login.html",
+        "nav": false,
+        "back": false
     }
 }
 

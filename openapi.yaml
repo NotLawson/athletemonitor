@@ -8,7 +8,7 @@ info:
     email: 011874@wmac.com.au
 
 servers:
-  - url: https://adp.wmac.com.au/api
+  - url: http://localhost/api
     description: Main Production Server
   - url: http://localhost:8080
     description: Local Development Server
